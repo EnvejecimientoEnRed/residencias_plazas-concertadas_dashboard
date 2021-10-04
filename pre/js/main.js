@@ -19,9 +19,9 @@ import '../css/main.scss';
 /////
 let mapBlock = d3.select('#mapa'), vizBlock = d3.select('#viz');
 let mapWidth = parseInt(mapBlock.style('width')), mapHeight = parseInt(mapBlock.style('height')),
-    vizWidth = parseInt(vizBlock.style('width')), vizHeight = parseInt(mapBlock.style('height'));
+    vizWidth = parseInt(vizBlock.style('width')), vizHeight = parseInt(vizBlock.style('height'));
 let mapLayer, vizLayer;
-let projection, path;
+let projection, path, colors;
 let ccaaData = [], provData = [], ccaaMap, provMap;
 let tooltip = d3.select('#tooltip');
 
@@ -53,13 +53,18 @@ d3.queue()
         });
 
         provMap.features.forEach(function(item) {
-            let dato = ccaaData.filter(function(subItem) {
+            let dato = provData.filter(function(subItem) {
                 if(parseInt(subItem.id) == parseInt(item.properties.cod_prov)) {
                     return subItem;
                 };
             });
             item.data = dato[0];
         });
+
+        //Uso de colores
+        colors = d3.scaleLinear()
+            .domain([0,25,50,75])
+            .range(['#a7e7e7', '#68a7a7', '#2b6b6c', '#003334']);
 
         initDashboard();
 
@@ -77,12 +82,8 @@ function initDashboard() {
 //MAPA
 function initMap() { //Valores por defecto CCAA
     mapLayer = mapBlock.append('svg').attr('id', 'map').attr('width', mapWidth).attr('height', mapHeight);
-    projection = d3_composite.geoConicConformalSpain().scale(2000).fitSize([mapWidth,mapHeight], ccaaMap);
+    projection = d3_composite.geoConicConformalSpain().scale(1800).fitSize([mapWidth,mapHeight], ccaaMap);
     path = d3.geoPath(projection);
-
-    let colors = d3.scaleLinear()
-        .domain([0,25,50,75])
-        .range(['#a7e7e7', '#68a7a7', '#2b6b6c', '#003334']);
 
     mapLayer.selectAll("poligonos")
         .data(ccaaMap.features)
@@ -90,41 +91,39 @@ function initMap() { //Valores por defecto CCAA
         .append("path")
         .attr("class", "poligonos")
         .style('fill', function(d) {
-            console.log(d);
             return colors(+d.data.porc_concertadas);
         })
         .style('stroke', '#282828')
         .style('stroke-width', '0.25px')
         .attr("d", path)
-        // .on('mousemove mouseover', function(d,i,e){
-        //     //Línea diferencial y cambio del polígonos
-        //     let currentProv = this;
+        .on('mousemove mouseover', function(d,i,e){
+            //Línea diferencial y cambio del polígonos
+            let current = this;
             
-        //     document.getElementsByTagName('svg')[0].removeChild(this);
-        //     document.getElementsByTagName('svg')[0].appendChild(currentProv);
+            document.getElementsByTagName('svg')[0].removeChild(this);
+            document.getElementsByTagName('svg')[0].appendChild(current);
 
-        //     currentProv.style.stroke = '#000';
-        //     currentProv.style.strokeWidth = '1px';
+            current.style.stroke = '#000';
+            current.style.strokeWidth = '1px';
 
-        //     //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
-        //     let html = '<p class="chart__tooltip--title">' + d.properties.name + '<p class="chart__tooltip--text">Tasa general (100 años o más): ' + numberWithCommas(d.properties.tasa_total.toFixed(2)) + '</p>' + 
-        //     '<p class="chart__tooltip--text">Tasa en mujeres (100 años o más): ' + numberWithCommas(d.properties.tasa_mujeres.toFixed(2)) + '</p>' + 
-        //     '<p class="chart__tooltip--text">Tasa en hombres (100 años o más): ' + numberWithCommas(d.properties.tasa_hombres.toFixed(2)) + '</p>';
+            //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
+            let html = '<p class="chart__tooltip--title">' + d.data.lugar + '<p class="chart__tooltip--text">' + 
+            '% de plazas concertadas: ' + numberWithCommas(d.data.porc_concertadas) + '%</p>';
 
-        //     tooltip.html(html);
+            tooltip.html(html);
 
-        //     //Tooltip
-        //     getInTooltip(tooltip);                
-        //     positionTooltip(window.event, tooltip);
-        // })
-        // .on('mouseout', function(d,i,e) {
-        //     //Línea diferencial
-        //     this.style.stroke = '#282828';
-        //     this.style.strokeWidth = '0.25px';
+            //Tooltip
+            getInTooltip(tooltip);                
+            positionTooltip(window.event, tooltip);
+        })
+        .on('mouseout', function(d,i,e) {
+            //Línea diferencial
+            this.style.stroke = '#282828';
+            this.style.strokeWidth = '0.25px';
 
-        //     //Desaparición del tooltip
-        //     getOutTooltip(tooltip); 
-        // });
+            //Desaparición del tooltip
+            getOutTooltip(tooltip); 
+        });
 
     mapLayer.append('path')
         .style('fill', 'none')
@@ -133,16 +132,93 @@ function initMap() { //Valores por defecto CCAA
 }
 
 function setMap(type) {
+    let auxData = [];
 
+    if (type == 'ccaa') {
+        auxData = ccaaMap;
+    } else {
+        auxData = provMap;
+    }
+
+    mapLayer.selectAll(".poligonos")
+        .remove();
+
+    mapLayer.selectAll("poligonos")
+        .data(auxData.features)
+        .enter()
+        .append("path")
+        .attr("class", "poligonos")
+        .style('fill', function(d) {
+            return colors(+d.data.porc_concertadas);
+        })
+        .style('stroke', '#282828')
+        .style('stroke-width', '0.25px')
+        .attr("d", path)
+        .on('mousemove mouseover', function(d,i,e){
+            //Línea diferencial y cambio del polígonos
+            let current = this;
+            
+            document.getElementsByTagName('svg')[0].removeChild(this);
+            document.getElementsByTagName('svg')[0].appendChild(current);
+
+            current.style.stroke = '#000';
+            current.style.strokeWidth = '1px';
+
+            //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
+            let html = '<p class="chart__tooltip--title">' + d.data.lugar + '<p class="chart__tooltip--text">' + 
+            '% de plazas concertadas: ' + numberWithCommas(d.data.porc_concertadas) + '%</p>';
+
+            tooltip.html(html);
+
+            //Tooltip
+            getInTooltip(tooltip);                
+            positionTooltip(window.event, tooltip);
+        })
+        .on('mouseout', function(d,i,e) {
+            //Línea diferencial
+            this.style.stroke = '#282828';
+            this.style.strokeWidth = '0.25px';
+
+            //Desaparición del tooltip
+            getOutTooltip(tooltip); 
+        });
 }
 
 //LÍNEA
-function initViz() { //Valores por defecto CCAA
+function initViz() {
+    vizLayer = vizBlock
+        .append('svg')
+        .attr('width', vizWidth)
+        .attr('height', vizHeight)
+        .append('g');
 
-}
+    //Creación de la línea vertical
+    vizLayer.selectAll('linea-vertical')
+        .data([0])
+        .enter()
+        .append('rect')
+        .attr('class', 'linea-vertical')
+        .attr('width', 2)
+        .attr('height', vizHeight)
+        .style('fill', '#cecece')
+        .attr('x', (vizWidth / 2));
+
+    //Generación de datos en el grupo
+    vizLayer.selectAll('lineas')
+        .data(ccaaData)
+        .enter()
+        .append('rect')
+        .attr('class', 'linea')
+        .attr('data-lugar', function(d) { return d.lugar; })
+        .attr('width', 40)
+        .attr('height', 1.25)
+        .style('fill', function(d) { return colors(+d.porc_concertadas); })
+        .attr('x', (vizWidth / 2) - 20)
+        .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100); })
+    }
 
 function setViz(type) {
-
+    console.log("vale", type);
 }
 
 //SETEO DEL DASHBOARD
@@ -156,7 +232,7 @@ for(let i = 0; i < btnChart.length; i++) {
         }
         this.classList.add('active');
         //Cambiamos el dashboard
-        setDashboard(this.id);
+        setDashboard(this.getAttribute('data-type'));
     })
 }
 

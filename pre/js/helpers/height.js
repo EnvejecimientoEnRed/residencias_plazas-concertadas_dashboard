@@ -12,10 +12,10 @@ function getIframeParams() {
 ///Si viene desde iframe con altura fija, ejecutamos esta función. Si no, los altos son dinámicos a través de PYMJS
 function setChartHeight(iframe_fijo) {
     if(iframe_fijo) {
-        //El contenedor y el main reciben una altura fija. En este caso, 700 y 668px
+        //El contenedor y el main reciben una altura fija. En este caso, 680 y 648px
         //La altura del gráfico se ajusta más a lo disponible en el main, quitando títulos, lógica, ejes y pie de gráfico
-        document.getElementsByClassName('container')[0].style.height = '720px';
-        document.getElementsByClassName('main')[0].style.height = '688px';
+        document.getElementsByClassName('container')[0].style.height = '680px';
+        document.getElementsByClassName('main')[0].style.height = '648px';
 
         let titleBlock = document.getElementsByClassName('b-title')[0].clientHeight < 54 ? 54 : document.getElementsByClassName('b-title')[0].clientHeight;
         let logicBlock = document.getElementsByClassName('chart__logics')[0].clientHeight;
