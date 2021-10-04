@@ -42,12 +42,10 @@ d3.queue()
         ccaaMap = topojson.feature(ccaaPol, ccaaPol.objects['ccaa']);
         provMap = topojson.feature(provPol, provPol.objects['provincias']);
 
-        console.log(ccaaMap);
-
         //Dejamos los datos incluidos en los polígonos de los mapas
         ccaaMap.features.forEach(function(item) {
             let dato = ccaaData.filter(function(subItem) {
-                if(parseInt(subItem.id) == parseInt(item.cartodb_id)) {
+                if(parseInt(subItem.id) == parseInt(item.properties.cc_1)) {
                     return subItem;
                 };
             });
@@ -56,7 +54,7 @@ d3.queue()
 
         provMap.features.forEach(function(item) {
             let dato = ccaaData.filter(function(subItem) {
-                if(parseInt(subItem.id) == parseInt(item.cod_prov)) {
+                if(parseInt(subItem.id) == parseInt(item.properties.cod_prov)) {
                     return subItem;
                 };
             });
@@ -83,16 +81,17 @@ function initMap() { //Valores por defecto CCAA
     path = d3.geoPath(projection);
 
     let colors = d3.scaleLinear()
-        .domain([0,3,6,9])
+        .domain([0,25,50,75])
         .range(['#a7e7e7', '#68a7a7', '#2b6b6c', '#003334']);
 
-    mapLayer.selectAll(".provincias")
+    mapLayer.selectAll("poligonos")
         .data(ccaaMap.features)
         .enter()
         .append("path")
-        .attr("class", "provincias")
+        .attr("class", "poligonos")
         .style('fill', function(d) {
-            return colors(d.properties.tasa_total);
+            console.log(d);
+            return colors(+d.data.porc_concertadas);
         })
         .style('stroke', '#282828')
         .style('stroke-width', '0.25px')
