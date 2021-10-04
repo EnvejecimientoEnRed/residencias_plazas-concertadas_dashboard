@@ -128,11 +128,11 @@ body, button {
             justify-content: space-between;
 
             .chart__map {
-                width: 75%;
+                width: calc(100% - 160px)
             }
 
             .chart__viz {
-                width: 25%;
+                width: 120px;
             }
 
             //Interior de ejes

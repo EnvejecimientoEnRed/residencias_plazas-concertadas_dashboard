@@ -45,7 +45,7 @@ d3.queue()
         //Dejamos los datos incluidos en los polígonos de los mapas
         ccaaMap.features.forEach(function(item) {
             let dato = ccaaData.filter(function(subItem) {
-                if(parseInt(subItem.id) == parseInt(item.properties.cc_1)) {
+                if(parseInt(subItem.id) == parseInt(item.id)) {
                     return subItem;
                 };
             });
@@ -115,6 +115,15 @@ function initMap() { //Valores por defecto CCAA
             //Tooltip
             getInTooltip(tooltip);                
             positionTooltip(window.event, tooltip);
+
+            //Jugar con las líneas
+            d3.selectAll('.linea')
+                .style('opacity', 0.5);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.5);
+
+
         })
         .on('mouseout', function(d,i,e) {
             //Línea diferencial
@@ -122,7 +131,14 @@ function initMap() { //Valores por defecto CCAA
             this.style.strokeWidth = '0.25px';
 
             //Desaparición del tooltip
-            getOutTooltip(tooltip); 
+            getOutTooltip(tooltip);
+
+            //Jugar con las líneas
+            d3.selectAll('.linea')
+                .style('opacity', 1);
+
+            d3.selectAll('.texto')
+                .style('opacity', 1);
         });
 
     mapLayer.append('path')
@@ -210,15 +226,64 @@ function initViz() {
         .append('rect')
         .attr('class', 'linea')
         .attr('data-lugar', function(d) { return d.lugar; })
-        .attr('width', 40)
-        .attr('height', 1.25)
+        .attr('width', 30)
+        .attr('height', 2)
         .style('fill', function(d) { return colors(+d.porc_concertadas); })
-        .attr('x', (vizWidth / 2) - 20)
-        .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100); })
-    }
+        .attr('x', (vizWidth / 2) - 15)
+        .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100); });
+
+    //Generación de letras
+    vizLayer.selectAll('texto')
+        .data(ccaaData)
+        .enter()
+        .append('text')
+        .style('font-size', 12)
+        .text('PR')
+        .attr('class', 'texto')
+        .attr('data-lugar', function(d) { return d.lugar; })
+        .attr('x', 80)
+        .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100) + 5; });
+}
 
 function setViz(type) {
-    console.log("vale", type);
+    let auxData = [];
+
+    if(type == 'ccaa') {
+        auxData = ccaaData;
+    } else {
+        auxData = provData;
+    }
+
+    vizLayer.selectAll('.linea')
+        .remove();
+
+    vizLayer.selectAll('.texto')
+        .remove();
+
+    //Generación de datos en el grupo
+    vizLayer.selectAll('lineas')
+        .data(auxData)
+        .enter()
+        .append('rect')
+        .attr('class', 'linea')
+        .attr('data-lugar', function(d) { return d.lugar; })
+        .attr('width', 30)
+        .attr('height', 1.25)
+        .style('fill', function(d) { return colors(+d.porc_concertadas); })
+        .attr('x', (vizWidth / 2) - 15)
+        .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100); });
+
+    //Generación de letras
+    vizLayer.selectAll('texto')
+        .data(auxData)
+        .enter()
+        .append('text')
+        .style('font-size', 12)
+        .text('PR')
+        .attr('class', 'texto')
+        .attr('data-lugar', function(d) { return d.lugar; })
+        .attr('x', 80)
+        .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100) + 5; });
 }
 
 //SETEO DEL DASHBOARD
