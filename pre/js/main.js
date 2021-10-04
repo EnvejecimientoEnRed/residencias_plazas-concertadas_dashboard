@@ -39,7 +39,9 @@ function initDashboard(ccaa, prov, ccaaPol, provPol) {
     provData = csv.parse(prov);
 
     ccaaMap = topojson.feature(ccaaPol, ccaaPol.objects['shapefiles_ccaa_espana']);
-    provMap = topojson.feature(provPol, provPol.objects['shapefiles_ccaa_espana']);
+    provMap = topojson.feature(provPol, provPol.objects['provincias']);
+
+    console.log(ccaaMap, provMap);
 
     initMap();
     initViz();
