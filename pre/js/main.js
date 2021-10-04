@@ -21,6 +21,7 @@ let mapBlock = d3.select('#mapa'), vizBlock = d3.select('#viz');
 let mapWidth = parseInt(mapBlock.style('width')), mapHeight = parseInt(mapBlock.style('height')),
     vizWidth = parseInt(vizBlock.style('width')), vizHeight = parseInt(mapBlock.style('height'));
 let mapLayer, vizLayer;
+let projection, path;
 let ccaaData = [], provData = [], ccaaMap, provMap;
 let tooltip = d3.select('#tooltip');
 
@@ -28,28 +29,108 @@ let tooltip = d3.select('#tooltip');
 const csv = d3.dsvFormat(",");
 
 d3.queue()
-    .defer(d3.text, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/envejecimiento_centenarios_mapa/main/data/ccaa_plazas_con_respuesta.csv')
-    .defer(d3.text, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/envejecimiento_centenarios_mapa/main/data/prov_plazas_con_respuesta.csv')
-    .defer(d3.json, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/envejecimiento_centenarios_mapa/main/data/ccaa.json')
-    .defer(d3.json, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/envejecimiento_centenarios_mapa/main/data/provincias.json')
-    .await(initDashboard);
+    .defer(d3.text, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/ccaa_plazas_con_respuesta.csv')
+    .defer(d3.text, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/prov_plazas_con_respuesta.csv')
+    .defer(d3.json, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/ccaa.json')
+    .defer(d3.json, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/provincias.json')
+    .await(function(error, ccaa, prov, ccaaPol, provPol) {
+        if (error) throw error;
 
-function initDashboard(ccaa, prov, ccaaPol, provPol) {
-    ccaaData = csv.parse(ccaa);
-    provData = csv.parse(prov);
+        ccaaData = csv.parse(ccaa);
+        provData = csv.parse(prov);
 
-    ccaaMap = topojson.feature(ccaaPol, ccaaPol.objects['shapefiles_ccaa_espana']);
-    provMap = topojson.feature(provPol, provPol.objects['provincias']);
+        ccaaMap = topojson.feature(ccaaPol, ccaaPol.objects['ccaa']);
+        provMap = topojson.feature(provPol, provPol.objects['provincias']);
 
-    console.log(ccaaMap, provMap);
+        console.log(ccaaMap);
 
+        //Dejamos los datos incluidos en los polígonos de los mapas
+        ccaaMap.features.forEach(function(item) {
+            let dato = ccaaData.filter(function(subItem) {
+                if(parseInt(subItem.id) == parseInt(item.cartodb_id)) {
+                    return subItem;
+                };
+            });
+            item.data = dato[0];
+        });
+
+        provMap.features.forEach(function(item) {
+            let dato = ccaaData.filter(function(subItem) {
+                if(parseInt(subItem.id) == parseInt(item.cod_prov)) {
+                    return subItem;
+                };
+            });
+            item.data = dato[0];
+        });
+
+        initDashboard();
+
+    });
+
+function initDashboard() {
     initMap();
     initViz();
+
+    setTimeout(() => {
+        setChartCanvas();
+    }, 5000);
 }
 
 //MAPA
 function initMap() { //Valores por defecto CCAA
     mapLayer = mapBlock.append('svg').attr('id', 'map').attr('width', mapWidth).attr('height', mapHeight);
+    projection = d3_composite.geoConicConformalSpain().scale(2000).fitSize([mapWidth,mapHeight], ccaaMap);
+    path = d3.geoPath(projection);
+
+    let colors = d3.scaleLinear()
+        .domain([0,3,6,9])
+        .range(['#a7e7e7', '#68a7a7', '#2b6b6c', '#003334']);
+
+    mapLayer.selectAll(".provincias")
+        .data(ccaaMap.features)
+        .enter()
+        .append("path")
+        .attr("class", "provincias")
+        .style('fill', function(d) {
+            return colors(d.properties.tasa_total);
+        })
+        .style('stroke', '#282828')
+        .style('stroke-width', '0.25px')
+        .attr("d", path)
+        // .on('mousemove mouseover', function(d,i,e){
+        //     //Línea diferencial y cambio del polígonos
+        //     let currentProv = this;
+            
+        //     document.getElementsByTagName('svg')[0].removeChild(this);
+        //     document.getElementsByTagName('svg')[0].appendChild(currentProv);
+
+        //     currentProv.style.stroke = '#000';
+        //     currentProv.style.strokeWidth = '1px';
+
+        //     //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
+        //     let html = '<p class="chart__tooltip--title">' + d.properties.name + '<p class="chart__tooltip--text">Tasa general (100 años o más): ' + numberWithCommas(d.properties.tasa_total.toFixed(2)) + '</p>' + 
+        //     '<p class="chart__tooltip--text">Tasa en mujeres (100 años o más): ' + numberWithCommas(d.properties.tasa_mujeres.toFixed(2)) + '</p>' + 
+        //     '<p class="chart__tooltip--text">Tasa en hombres (100 años o más): ' + numberWithCommas(d.properties.tasa_hombres.toFixed(2)) + '</p>';
+
+        //     tooltip.html(html);
+
+        //     //Tooltip
+        //     getInTooltip(tooltip);                
+        //     positionTooltip(window.event, tooltip);
+        // })
+        // .on('mouseout', function(d,i,e) {
+        //     //Línea diferencial
+        //     this.style.stroke = '#282828';
+        //     this.style.strokeWidth = '0.25px';
+
+        //     //Desaparición del tooltip
+        //     getOutTooltip(tooltip); 
+        // });
+
+    mapLayer.append('path')
+        .style('fill', 'none')
+        .style('stroke', '#000')
+        .attr('d', projection.getCompositionBorders());
 }
 
 function setMap(type) {
@@ -83,75 +164,10 @@ for(let i = 0; i < btnChart.length; i++) {
 function setDashboard(type) {
     setMap(type);
     setViz(type);
-}
 
-
-
-
-
-//Borrar cuando tengamos la estructura del mapa
-function main(error, centenarios, prov) {
-    if (error) throw error;
-
-    let provs = topojson.feature(prov, prov.objects.provincias);
-    let cents = topojson.feature(centenarios, centenarios.objects.provincias);
-    
-    //let projection = d3.geoMercator().scale(2200).center([0, 40]).translate([width / 1.7, height / 2]);
-    let projection = d3_composite.geoConicConformalSpain().scale(2000).fitSize([width,height], provs);
-    let path = d3.geoPath(projection);
-
-    //cents.forEach(d => { d.coords = projection([d.geometry.coordinates[0], d.geometry.coordinates[1]]) });
-    let colors = d3.scaleLinear()
-        .domain([0,3,6,9])
-        .range(['#a7e7e7', '#68a7a7', '#2b6b6c', '#003334'])
-    
-    mapLayer.selectAll(".provincias")
-        .data(cents.features)
-        .enter()
-        .append("path")
-        .attr("class", "provincias")
-        .style('fill', function(d) {
-            return colors(d.properties.tasa_total);
-        })
-        .style('stroke', '#282828')
-        .style('stroke-width', '0.25px')
-        .attr("d", path)
-        .on('mousemove mouseover', function(d,i,e){
-            //Línea diferencial y cambio del polígonos
-            let currentProv = this;
-            
-            document.getElementsByTagName('svg')[0].removeChild(this);
-            document.getElementsByTagName('svg')[0].appendChild(currentProv);
-
-            currentProv.style.stroke = '#000';
-            currentProv.style.strokeWidth = '1px';
-
-            //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
-            let html = '<p class="chart__tooltip--title">' + d.properties.name + '<p class="chart__tooltip--text">Tasa general (100 años o más): ' + numberWithCommas(d.properties.tasa_total.toFixed(2)) + '</p>' + 
-            '<p class="chart__tooltip--text">Tasa en mujeres (100 años o más): ' + numberWithCommas(d.properties.tasa_mujeres.toFixed(2)) + '</p>' + 
-            '<p class="chart__tooltip--text">Tasa en hombres (100 años o más): ' + numberWithCommas(d.properties.tasa_hombres.toFixed(2)) + '</p>';
-
-            tooltip.html(html);
-
-            //Tooltip
-            getInTooltip(tooltip);                
-            positionTooltip(window.event, tooltip);
-        })
-        .on('mouseout', function(d,i,e) {
-            //Línea diferencial
-            this.style.stroke = '#282828';
-            this.style.strokeWidth = '0.25px';
-
-            //Desaparición del tooltip
-            getOutTooltip(tooltip); 
-        });
-
-    mapLayer.append('path')
-        .style('fill', 'none')
-        .style('stroke', '#000')
-        .attr('d', projection.getCompositionBorders());
-
-    setChartCanvas();
+    setTimeout(() => {
+        setChartCanvas();
+    }, 5000);
 }
 
 ///// REDES SOCIALES /////
