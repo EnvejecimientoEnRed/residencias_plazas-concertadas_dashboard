@@ -18,8 +18,13 @@ import '../css/main.scss';
 ///// VISUALIZACIÓN DEL GRÁFICO /////
 /////
 let mapBlock = d3.select('#mapa'), vizBlock = d3.select('#viz');
-let mapWidth = parseInt(mapBlock.style('width')), mapHeight = parseInt(mapBlock.style('height')),
+let mapWidth = parseInt(mapBlock.style('width')), mapHeight = window.innerWidth < 640 ? mapWidth * 0.62 > 340 ? 340 : mapWidth * 0.62 : parseInt(mapBlock.style('height')),
     vizWidth = parseInt(vizBlock.style('width')), vizHeight = parseInt(vizBlock.style('height'));
+
+if(window.innerWidth < 640) {
+    document.getElementsByClassName('chart__dashboard')[0].style.height = mapHeight + vizHeight + 8 + 'px';
+}
+
 let mapLayer, vizLayer;
 let projection, path, colors;
 let ccaaData = [], provData = [], ccaaMap, provMap;
