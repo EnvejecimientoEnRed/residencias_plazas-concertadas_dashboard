@@ -14,9 +14,9 @@ function setChartHeight(iframe_fijo) {
     if(iframe_fijo) {
         //El contenedor y el main reciben una altura fija
         //La altura del gráfico se ajusta más a lo disponible en el main, quitando títulos, lógica, ejes y pie de gráfico
-        document.getElementsByClassName('container')[0].style.height = '636px';
-        document.getElementsByClassName('main')[0].style.height = '604px';
-        let height = 604; //Altura total del main
+        document.getElementsByClassName('container')[0].style.height = '708px';
+        document.getElementsByClassName('main')[0].style.height = '676px';
+        let height = 676; //Altura total del main
 
         let titleBlock = document.getElementsByClassName('b-title')[0].clientHeight < 54 ? 54 : document.getElementsByClassName('b-title')[0].clientHeight;
         let logicBlock = document.getElementsByClassName('chart__logics')[0].clientHeight;
