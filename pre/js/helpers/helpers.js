@@ -50,7 +50,7 @@ function getNumberWithCommas(x) {
 }
 
 function numberWithCommas(x) {
-    return x.toString().replace(/\./g, ',');       
+    return parseFloat(x).toFixed(1).toString().replace(/\./g, ',');       
 }
 
 function numberWithCommas2(x) {
