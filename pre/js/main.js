@@ -495,6 +495,7 @@ function setViz(type) {
             //Jugar con los polígonos
             let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
             let copy = current;
+            let copy2 = d3.select(`[data-abrev="poligono-${currentLinear}"]`);
 
             document.getElementsByTagName('svg')[0].removeChild(current);
             document.getElementsByTagName('svg')[0].appendChild(copy);
@@ -575,6 +576,7 @@ function setViz(type) {
             //Jugar con los polígonos
             let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
             let copy = current;
+            let copy2 = d3.select(`[data-abrev="poligono-${currentLinear}"]`);
 
             document.getElementsByTagName('svg')[0].removeChild(current);
             document.getElementsByTagName('svg')[0].appendChild(copy);
