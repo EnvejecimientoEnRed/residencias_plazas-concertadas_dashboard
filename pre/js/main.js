@@ -22,7 +22,8 @@ let mapWidth = parseInt(mapBlock.style('width')), mapHeight = window.innerWidth 
     vizWidth = parseInt(vizBlock.style('width')), vizHeight = parseInt(vizBlock.style('height'));
 
 if(window.innerWidth < 640) {
-    document.getElementsByClassName('chart__dashboard')[0].style.height = mapHeight + vizHeight + 8 + 'px';
+    console.log(mapHeight);
+    document.getElementsByClassName('chart__dashboard')[0].style.height = mapHeight + vizHeight + 8 + 9 + 'px';
 }
 
 let mapLayer, vizLayer;
@@ -68,7 +69,7 @@ d3.queue()
 
         //Uso de colores
         colors = d3.scaleLinear()
-            .domain([0,25,50,75])
+            .domain([25,50,75,100])
             .range(['#a7e7e7', '#68a7a7', '#2b6b6c', '#003334']);
 
         initDashboard();
@@ -77,7 +78,7 @@ d3.queue()
 
 function initDashboard() {
     initMap();
-    initViz();
+    window.innerWidth >= 640 ? initViz() : initMobileViz();
 
     setTimeout(() => {
         setChartCanvas();
@@ -220,9 +221,11 @@ function initViz() {
         .append('rect')
         .attr('class', 'linea-vertical')
         .attr('width', 2)
-        .attr('height', vizHeight)
+        .attr('height', vizHeight + 5)
         .style('fill', '#cecece')
         .attr('x', (vizWidth / 2));
+
+    //Generación de los dígitos para eje Y
 
     //Generación de datos en el grupo
     vizLayer.selectAll('lineas')
@@ -243,11 +246,16 @@ function initViz() {
         .enter()
         .append('text')
         .style('font-size', 12)
+        .style('text-align', 'right')
         .text('PR')
         .attr('class', 'texto')
         .attr('data-lugar', function(d) { return d.lugar; })
         .attr('x', 80)
         .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100) + 5; });
+}
+
+function initMobileViz() {
+
 }
 
 function setViz(type) {
@@ -291,6 +299,10 @@ function setViz(type) {
         .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100) + 5; });
 }
 
+function setMobileViz(type) {
+
+}
+
 //SETEO DEL DASHBOARD
 let btnChart = document.getElementsByClassName('btn__chart');
 
@@ -308,7 +320,7 @@ for(let i = 0; i < btnChart.length; i++) {
 
 function setDashboard(type) {
     setMap(type);
-    setViz(type);
+    window.innerWidth >= 640 ? setViz(type) : setMobileViz(type);
 
     setTimeout(() => {
         setChartCanvas();

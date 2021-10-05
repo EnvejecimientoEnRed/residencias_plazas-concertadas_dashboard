@@ -68,9 +68,15 @@ body, button {
             margin-top: 12px;
         }
 
+        &__top-note {
+            font-size: 12px;
+        }
+
         &__buttons {
             display: flex;
             justify-content: center;
+
+            margin-top: 8px;
 
             .btn__chart {
                 width: auto;
@@ -92,7 +98,7 @@ body, button {
                     border: 0px;
                 }
             }
-        }
+        }       
 
         &__legend {
             width: 100%;
@@ -129,6 +135,12 @@ body, button {
 
             .chart__map {
                 width: calc(100% - 160px)
+            }
+
+            .chart__line {
+                width: 1px;
+                height: 100%;
+                background-color: #cecece;                
             }
 
             .chart__viz {
@@ -381,11 +393,16 @@ body, button {
                     border-right: 0px;
                 }
 
+                .chart__line {
+                    width: 100%;
+                    height: 1px;
+                    background-color: #cecece;
+                    margin: 4px 0px;                
+                }
+
                 .chart__viz {
                     width: 100%;
-                    height: 80px;
-
-                    margin-top: 8px;
+                    height: 64px;
                 }
             }
         }
