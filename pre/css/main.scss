@@ -24,6 +24,7 @@ body, button {
 .main {
     width: 100%;
     height: auto;
+    padding-right: 3px;
 
     .content {
         position: relative;
@@ -351,9 +352,9 @@ body, button {
     top: 0px;
 
     width: auto;
-    max-width: 135px;
+    max-width: 150px;
     height: auto;
-    padding: 8px;
+    padding: 6px;
     background-color: #F4F4F4;
 
     &--title {

@@ -23,7 +23,7 @@ function positionTooltip(event, tooltip) {
     let mobile = window.innerWidth < 525 ? -30 : 10;
     let horizontalPos = left == 'left' ? 20 : - distanciaAncho + mobile;
 
-    tooltip.style('top', y + 17 + 'px');
+    tooltip.style('top', y + 7.5 + 'px');
     tooltip.style('left', (x + horizontalPos) + 'px');
 }
 

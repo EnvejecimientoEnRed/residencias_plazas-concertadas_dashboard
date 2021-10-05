@@ -2,7 +2,7 @@ import { getIframeParams } from './helpers/height';
 import { setChartCanvas, setChartCanvasImage } from './helpers/canvas-image';
 import { setRRSSLinks } from './helpers/rrss';
 import { getInTooltip, getOutTooltip, positionTooltip } from './helpers/tooltip';
-import { numberWithCommas } from './helpers/helpers';
+import { numberWithCommas, numberWithCommas2 } from './helpers/helpers';
 import './helpers/tabs';
 import 'url-search-params-polyfill';
 
@@ -85,7 +85,7 @@ function initDashboard() {
 }
 
 //MAPA
-function initMap() { //Valores por defecto CCAA
+function initMap() {
     mapLayer = mapBlock.append('svg').attr('id', 'map').attr('width', mapWidth).attr('height', mapHeight);
     projection = d3_composite.geoConicConformalSpain().scale(1800).fitSize([mapWidth,mapHeight], ccaaMap);
     path = d3.geoPath(projection);
@@ -112,9 +112,11 @@ function initMap() { //Valores por defecto CCAA
             current.style.stroke = '#000';
             current.style.strokeWidth = '1px';
 
-            //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
+            //Elemento HTML > Tooltip
             let html = '<p class="chart__tooltip--title">' + d.data.lugar + 
-            '<p class="chart__tooltip--text">' + numberWithCommas(d.data.porc_concertadas) + '%</p>';
+            '<p class="chart__tooltip--text">Plazas totales:' + numberWithCommas2(d.data.plazas_total) + '</p>' +
+            '<p class="chart__tooltip--text">Plazas concertadas: ' + numberWithCommas2(d.data.plazas_concertadas) + '</p>' +
+            '<p class="chart__tooltip--text">Porc. de concertadas: ' + numberWithCommas(d.data.porc_concertadas) + '%</p>';
 
             tooltip.html(html);
 
@@ -125,11 +127,8 @@ function initMap() { //Valores por defecto CCAA
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.data.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -146,7 +145,7 @@ function initMap() { //Valores por defecto CCAA
             getOutTooltip(tooltip);
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -193,9 +192,11 @@ function setMap(type) {
             current.style.stroke = '#000';
             current.style.strokeWidth = '1px';
 
-            //Elemento HTML > Tooltip (mostrar nombre de provincia, año y tasas para más de 100 años)
+            //Elemento HTML > Tooltip
             let html = '<p class="chart__tooltip--title">' + d.data.lugar + 
-            '<p class="chart__tooltip--text">' + numberWithCommas(d.data.porc_concertadas) + '%</p>';
+            '<p class="chart__tooltip--text">Plazas totales:' + numberWithCommas2(d.data.plazas_total) + '</p>' +
+            '<p class="chart__tooltip--text">Plazas concertadas: ' + numberWithCommas2(d.data.plazas_concertadas) + '</p>' +
+            '<p class="chart__tooltip--text">Porc. de concertadas: ' + numberWithCommas(d.data.porc_concertadas) + '%</p>';
 
             tooltip.html(html);
 
@@ -206,11 +207,8 @@ function setMap(type) {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.data.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -227,7 +225,7 @@ function setMap(type) {
             getOutTooltip(tooltip);
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -279,7 +277,7 @@ function initViz() {
         .append('rect')
         .attr('class', function(d) {
             if (d.abrev == 'NAC') {
-                return 'nacional';
+                return 'linea-nacional';
             } else {
                 return 'linea';
             }
@@ -300,11 +298,8 @@ function initViz() {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -330,7 +325,7 @@ function initViz() {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -382,11 +377,8 @@ function initViz() {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.nacional,.linea,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -412,7 +404,7 @@ function initViz() {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -473,7 +465,7 @@ function initMobileViz() {
         .append('rect')
         .attr('class', function(d) {
             if (d.abrev == 'NAC') {
-                return 'nacional';
+                return 'linea-nacional';
             } else {
                 return 'linea';
             }
@@ -501,10 +493,10 @@ function initMobileViz() {
             let currentLinear = d.abrev;
             
             d3.selectAll('.linea')
-                .style('opacity', 0.15);
+                .style('opacity', 0.125);
 
             d3.selectAll('.texto')
-                .style('opacity', 0.15);
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -557,7 +549,7 @@ function initMobileViz() {
             if(d.abrev == 'NAC') {
                 return 1;
             } else {
-                return 0.15;
+                return 0.125;
             }
         })
         .style('text-anchor', 'end')
@@ -582,11 +574,8 @@ function initMobileViz() {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -612,11 +601,11 @@ function initMobileViz() {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
-                .style('opacity', 0.15);
+                .style('opacity', 0.125);
 
             //Jugar con los polígonos
             let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
@@ -654,7 +643,7 @@ function setViz(type) {
         .append('rect')
         .attr('class', function(d) {
             if (d.abrev == 'NAC') {
-                return 'nacional';
+                return 'linea-nacional';
             } else {
                 return 'linea';
             }
@@ -675,11 +664,8 @@ function setViz(type) {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -705,7 +691,7 @@ function setViz(type) {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -757,11 +743,8 @@ function setViz(type) {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -787,7 +770,7 @@ function setViz(type) {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -829,7 +812,7 @@ function setMobileViz(type) {
         .append('rect')
         .attr('class', function(d) {
             if (d.abrev == 'NAC') {
-                return 'nacional';
+                return 'linea-nacional';
             } else {
                 return 'linea';
             }
@@ -856,11 +839,8 @@ function setMobileViz(type) {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -886,11 +866,11 @@ function setMobileViz(type) {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
-                .style('opacity', 0.15);
+                .style('opacity', 0.125);
 
             //Jugar con los polígonos
             let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
@@ -913,7 +893,7 @@ function setMobileViz(type) {
             if(d.abrev == 'NAC') {
                 return 1;
             } else {
-                return 0.15;
+                return 0.125;
             }
         })
         .style('text-anchor', 'end')
@@ -938,11 +918,8 @@ function setMobileViz(type) {
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.abrev;
             
-            d3.selectAll('.linea')
-                .style('opacity', 0.15);
-
-            d3.selectAll('.texto')
-                .style('opacity', 0.15);
+            d3.selectAll('.linea,.nacional,.texto')
+                .style('opacity', 0.125);
 
             d3.select(`[data-abrev="linea-${currentLinear}"]`)
                 .style('opacity', 1);
@@ -968,7 +945,7 @@ function setMobileViz(type) {
             let currentLinear = d.abrev;
 
             //Jugar con las líneas
-            d3.selectAll('.linea')
+            d3.selectAll('.linea,.nacional')
                 .style('opacity', 1);
 
             d3.selectAll('.texto')
@@ -1035,8 +1012,11 @@ function setCentroidTooltip(dataPol, type, poligono) {
         aux = aux[0];
     }
     
+    //Elemento HTML > Tooltip
     let html = '<p class="chart__tooltip--title">' + aux.data.lugar + 
-        '<p class="chart__tooltip--text">' + numberWithCommas(aux.data.porc_concertadas) + '%</p>';
+    '<p class="chart__tooltip--text">Plazas totales:' + numberWithCommas2(aux.data.plazas_total) + '</p>' +
+    '<p class="chart__tooltip--text">Plazas concertadas: ' + numberWithCommas2(aux.data.plazas_concertadas) + '</p>' +
+    '<p class="chart__tooltip--text">Porc. de concertadas: ' + numberWithCommas(aux.data.porc_concertadas) + '%</p>';
 
     tooltip.html(html);
     
