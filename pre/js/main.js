@@ -19,7 +19,7 @@ import '../css/main.scss';
 /////
 let mapBlock = d3.select('#mapa'), vizBlock = d3.select('#viz');
 let mapWidth = parseInt(mapBlock.style('width')), mapHeight = window.innerWidth < 640 ? mapWidth * 0.62 > 340 ? 340 : mapWidth * 0.62 : parseInt(mapBlock.style('height')),
-    vizWidth = parseInt(vizBlock.style('width')), vizHeight = parseInt(vizBlock.style('height'));
+    vizWidth = window.innerWidth >= 640 ? parseInt(vizBlock.style('width')) : parseInt(vizBlock.style('width')) - 40, vizHeight = parseInt(vizBlock.style('height'));
 
 if(window.innerWidth < 640) {
     document.getElementsByClassName('chart__dashboard')[0].style.height = mapHeight + vizHeight + 8 + 9 + 'px';
@@ -205,8 +205,6 @@ function setMap(type) {
 
             //Jugar con las líneas y las abreviaturas
             let currentLinear = d.data.abrev;
-
-            console.log(currentLinear);
             
             d3.selectAll('.linea')
                 .style('opacity', 0.15);
@@ -252,7 +250,7 @@ function initViz() {
         .attr('class', 'linea-vertical')
         .attr('width', 2)
         .attr('height', vizHeight + 5)
-        .style('fill', '#cecece')
+        .style('fill', '#cdcdcd')
         .attr('x', (vizWidth / 2));
 
     //Generación de los dígitos para eje Y
@@ -260,10 +258,11 @@ function initViz() {
         .data([0,50,100])
         .enter()
         .append('text')
+        .style('cursor','default')
         .style('font-size', '12px')
         .style('fill', '#262626')
         .style('text-anchor', 'start')
-        .text(function(d) { return d + " -"; })
+        .text(function(d) { return d + "%  "; })
         .attr('x', 0)
         .attr('y', function(d) { 
             if(d == 100) {
@@ -286,7 +285,7 @@ function initViz() {
             }
         })
         .attr('data-abrev', function(d) { return `linea-${d.abrev}`})
-        .attr('width', 60)
+        .attr('width', 50)
         .attr('height', 1.5)
         .style('fill', function(d) {
             if (d.abrev == 'NAC') {
@@ -295,7 +294,7 @@ function initViz() {
                 return colors(+d.porc_concertadas);
             }  
         })
-        .attr('x', (vizWidth / 2) - 30)
+        .attr('x', (vizWidth / 2) - 25)
         .attr('y', function(d) { return vizHeight - (+d.porc_concertadas * vizHeight / 100); })
         .on('mousemove mouseover', function(d,i,e){
             //Jugar con las líneas y las abreviaturas
@@ -352,6 +351,7 @@ function initViz() {
         .data(ccaaData)
         .enter()
         .append('text')
+        .style('cursor','default')
         .style('font-size', 12)
         .style('opacity', function(d) {
             if(d.abrev == 'NAC') {
@@ -425,13 +425,208 @@ function initViz() {
             current.style.strokeWidth = '0.25px';
 
             //Desaparición del tooltip
-            console.log("entra");
             getOutTooltip(tooltip);            
         });
 }
 
 function initMobileViz() {
+    vizLayer = vizBlock
+        .append('svg')
+        .attr('width', vizWidth)
+        .attr('height', vizHeight)
+        .style('transform', 'translateX(20px)');
 
+    //Creación de la línea horizontal
+    vizLayer.selectAll('linea-horizontal')
+        .data([0])
+        .enter()
+        .append('rect')
+        .attr('class', 'linea-horizontal')
+        .attr('width', '100%')
+        .attr('height', '2px')
+        .style('fill', '#cdcdcd')
+        .attr('y', (vizHeight / 2));
+
+    //Generación de los dígitos para eje Y
+    vizLayer.selectAll('texto')
+        .data([0,50,100])
+        .enter()
+        .append('text')
+        .style('cursor','default')
+        .style('font-size', '12px')
+        .style('fill', '#262626')
+        .style('text-anchor', 'start')
+        .text(function(d) { return d + "%  "; })
+        .attr('x', function(d) {
+            if(d == 100) {
+                return vizWidth - 30;
+            } else {
+                return d * vizWidth / 100;
+            }  
+        })
+        .attr('y', 10);
+
+    //Generación de datos en el grupo
+    vizLayer.selectAll('lineas')
+        .data(ccaaData)
+        .enter()
+        .append('rect')
+        .attr('class', function(d) {
+            if (d.abrev == 'NAC') {
+                return 'nacional';
+            } else {
+                return 'linea';
+            }
+        })
+        .attr('data-abrev', function(d) { return `linea-${d.abrev}`})
+        .attr('width', 1.5)
+        .attr('height', 30)
+        .style('fill', function(d) {
+            if (d.abrev == 'NAC') {
+                return 'red';
+            } else {
+                return colors(+d.porc_concertadas);
+            }  
+        })
+        .attr('y', (vizHeight / 2) - 15)
+        .attr('x', function(d) {
+            if (d.abrev == 'CE'){
+                return vizWidth - 2;
+            } else {
+                return +d.porc_concertadas * vizWidth / 100;
+            }  
+        })
+        .on('mousemove mouseover', function(d,i,e){
+            //Jugar con las líneas y las abreviaturas
+            let currentLinear = d.abrev;
+            
+            d3.selectAll('.linea')
+                .style('opacity', 0.15);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.15);
+
+            d3.select(`[data-abrev="linea-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            d3.select(`[data-abrev="texto-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            let copy = current;
+            let copy2 = d3.select(`[data-abrev="poligono-${currentLinear}"]`);
+
+            document.getElementsByTagName('svg')[0].removeChild(current);
+            document.getElementsByTagName('svg')[0].appendChild(copy);
+
+            copy.style.stroke = '#000';
+            copy.style.strokeWidth = '1px';
+
+            //Tooltip
+            setCentroidTooltip(currentLinear, 'ccaa', copy2);            
+        })
+        .on('mouseout', function(d,i,e) {
+            let currentLinear = d.abrev;
+
+            //Jugar con las líneas
+            d3.selectAll('.linea')
+                .style('opacity', 1);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.25);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            
+            current.style.stroke = '#282828';
+            current.style.strokeWidth = '0.25px';
+
+            //Desaparición del tooltip
+            getOutTooltip(tooltip);            
+        });
+
+    //Generación de letras
+    vizLayer.selectAll('texto')
+        .data(ccaaData)
+        .enter()
+        .append('text')
+        .style('cursor','default')
+        .style('font-size', 12)
+        .style('opacity', function(d) {
+            if(d.abrev == 'NAC') {
+                return 1;
+            } else {
+                return 0.15;
+            }
+        })
+        .style('text-anchor', 'end')
+        .text(function(d) { return d.abrev; })
+        .attr('class', function(d) {
+            if(d.abrev == 'NAC') {
+                return 'nacional';
+            } else {
+                return 'texto';
+            }
+        })
+        .attr('data-abrev', function(d) { return `texto-${d.abrev}`})
+        .attr('y', 60)
+        .attr('x', function(d) {
+            if (d.abrev == 'CE') {
+                return vizWidth;
+            } else {
+                return +d.porc_concertadas * vizWidth / 100 + 10;
+            }
+        })
+        .on('mousemove mouseover', function(d,i,e){
+            //Jugar con las líneas y las abreviaturas
+            let currentLinear = d.abrev;
+            
+            d3.selectAll('.linea')
+                .style('opacity', 0.15);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.15);
+
+            d3.select(`[data-abrev="linea-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            d3.select(`[data-abrev="texto-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            let copy = current;
+            let copy2 = d3.select(`[data-abrev="poligono-${currentLinear}"]`);
+
+            document.getElementsByTagName('svg')[0].removeChild(current);
+            document.getElementsByTagName('svg')[0].appendChild(copy);
+
+            copy.style.stroke = '#000';
+            copy.style.strokeWidth = '1px';
+
+            //Tooltip
+            setCentroidTooltip(currentLinear, 'ccaa', copy2);            
+        })
+        .on('mouseout', function(d,i,e) {
+            let currentLinear = d.abrev;
+
+            //Jugar con las líneas
+            d3.selectAll('.linea')
+                .style('opacity', 1);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.15);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            
+            current.style.stroke = '#282828';
+            current.style.strokeWidth = '0.25px';
+
+            //Desaparición del tooltip
+            getOutTooltip(tooltip);            
+        });
 }
 
 function setViz(type) {
@@ -531,6 +726,7 @@ function setViz(type) {
         .data(auxData)
         .enter()
         .append('text')
+        .style('cursor','default')
         .style('font-size', 12)
         .style('opacity', function(d) {
             if(d.abrev == 'NAC') {
@@ -609,7 +805,184 @@ function setViz(type) {
 }
 
 function setMobileViz(type) {
+    let auxData = [];
 
+    if(type == 'ccaa') {
+        auxData = ccaaData;
+    } else {
+        auxData = provData;
+    }
+
+    vizLayer.select('.nacional')
+        .remove();
+
+    vizLayer.selectAll('.linea')
+        .remove();
+
+    vizLayer.selectAll('.texto')
+        .remove();
+
+    //Generación de datos en el grupo
+    vizLayer.selectAll('lineas')
+        .data(auxData)
+        .enter()
+        .append('rect')
+        .attr('class', function(d) {
+            if (d.abrev == 'NAC') {
+                return 'nacional';
+            } else {
+                return 'linea';
+            }
+        })
+        .attr('data-abrev', function(d) { return `linea-${d.abrev}`})
+        .attr('width', 1.5)
+        .attr('height', 30)
+        .style('fill', function(d) {
+            if (d.abrev == 'NAC') {
+                return 'red';
+            } else {
+                return colors(+d.porc_concertadas);
+            }  
+        })
+        .attr('y', (vizHeight / 2) - 15)
+        .attr('x', function(d) {
+            if (d.abrev == 'CE'){
+                return vizWidth - 2;
+            } else {
+                return +d.porc_concertadas * vizWidth / 100;
+            }  
+        })
+        .on('mousemove mouseover', function(d,i,e){
+            //Jugar con las líneas y las abreviaturas
+            let currentLinear = d.abrev;
+            
+            d3.selectAll('.linea')
+                .style('opacity', 0.15);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.15);
+
+            d3.select(`[data-abrev="linea-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            d3.select(`[data-abrev="texto-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            let copy = current;
+            let copy2 = d3.select(`[data-abrev="poligono-${currentLinear}"]`);
+
+            document.getElementsByTagName('svg')[0].removeChild(current);
+            document.getElementsByTagName('svg')[0].appendChild(copy);
+
+            copy.style.stroke = '#000';
+            copy.style.strokeWidth = '1px';
+
+            //Tooltip
+            setCentroidTooltip(currentLinear, type, copy2);            
+        })
+        .on('mouseout', function(d,i,e) {
+            let currentLinear = d.abrev;
+
+            //Jugar con las líneas
+            d3.selectAll('.linea')
+                .style('opacity', 1);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.15);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            
+            current.style.stroke = '#282828';
+            current.style.strokeWidth = '0.25px';
+
+            //Desaparición del tooltip
+            getOutTooltip(tooltip);            
+        });
+
+    //Generación de letras
+    vizLayer.selectAll('texto')
+        .data(auxData)
+        .enter()
+        .append('text')
+        .style('cursor','default')
+        .style('font-size', 12)
+        .style('opacity', function(d) {
+            if(d.abrev == 'NAC') {
+                return 1;
+            } else {
+                return 0.15;
+            }
+        })
+        .style('text-anchor', 'end')
+        .text(function(d) { return d.abrev; })
+        .attr('class', function(d) {
+            if(d.abrev == 'NAC') {
+                return 'nacional';
+            } else {
+                return 'texto';
+            }
+        })
+        .attr('data-abrev', function(d) { return `texto-${d.abrev}`})
+        .attr('y', 60)
+        .attr('x', function(d) {
+            if (d.abrev == 'CE') {
+                return vizWidth;
+            } else {
+                return +d.porc_concertadas * vizWidth / 100 + 10;
+            }
+        })
+        .on('mousemove mouseover', function(d,i,e){
+            //Jugar con las líneas y las abreviaturas
+            let currentLinear = d.abrev;
+            
+            d3.selectAll('.linea')
+                .style('opacity', 0.15);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.15);
+
+            d3.select(`[data-abrev="linea-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            d3.select(`[data-abrev="texto-${currentLinear}"]`)
+                .style('opacity', 1);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            let copy = current;
+            let copy2 = d3.select(`[data-abrev="poligono-${currentLinear}"]`);
+
+            document.getElementsByTagName('svg')[0].removeChild(current);
+            document.getElementsByTagName('svg')[0].appendChild(copy);
+
+            copy.style.stroke = '#000';
+            copy.style.strokeWidth = '1px';
+
+            //Tooltip
+            setCentroidTooltip(currentLinear, type, copy2);            
+        })
+        .on('mouseout', function(d,i,e) {
+            let currentLinear = d.abrev;
+
+            //Jugar con las líneas
+            d3.selectAll('.linea')
+                .style('opacity', 1);
+
+            d3.selectAll('.texto')
+                .style('opacity', 0.25);
+
+            //Jugar con los polígonos
+            let current = document.querySelector(`[data-abrev="poligono-${currentLinear}"]`);
+            
+            current.style.stroke = '#282828';
+            current.style.strokeWidth = '0.25px';
+
+            //Desaparición del tooltip
+            getOutTooltip(tooltip);            
+        });
 }
 
 //SETEO DEL DASHBOARD
@@ -668,11 +1041,12 @@ function setCentroidTooltip(dataPol, type, poligono) {
     tooltip.html(html);
     
     let prueba = mapBlock.node().getBoundingClientRect().top;
+    let prueba2 = mapBlock.node().getBoundingClientRect().left;
 
     //Búsqueda del centroide para ubicar el tooltip
     getInTooltip(tooltip); 
     tooltip.style('top', prueba + centroide[1] + 'px');
-    tooltip.style('left', (centroide[0] + 60) + 'px');
+    tooltip.style('left', prueba2 + centroide[0] - 60 + 'px');
 }
 
 ///// REDES SOCIALES /////
