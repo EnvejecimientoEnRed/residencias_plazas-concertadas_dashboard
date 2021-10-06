@@ -368,7 +368,7 @@ function initViz() {
             }
         })
         .attr('data-abrev', function(d) { return `texto-${d.abrev}`})
-        .attr('x', 130)
+        .attr('x', 128.5)
         .attr('y', function(d) {
             if (d.abrev == 'CE') {
                 return 8.5;
@@ -734,7 +734,7 @@ function setViz(type) {
             }
         })
         .attr('data-abrev', function(d) { return `texto-${d.abrev}`})
-        .attr('x', 130)
+        .attr('x', 128.5)
         .attr('y', function(d) {
             if (d.abrev == 'CE') {
                 return 8.5;
