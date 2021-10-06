@@ -44,6 +44,9 @@ d3.queue()
         ccaaData = csv.parse(ccaa);
         provData = csv.parse(prov);
 
+        ccaaData = ccaaData.reverse();
+        provData = provData.reverse();
+
         ccaaMap = topojson.feature(ccaaPol, ccaaPol.objects['ccaa']);
         provMap = topojson.feature(provPol, provPol.objects['provincias']);
 

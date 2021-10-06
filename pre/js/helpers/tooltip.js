@@ -20,10 +20,14 @@ function positionTooltip(event, tooltip) {
 
     //Posición
     let left = window.innerWidth / 2 > x ? 'left' : 'right';
+    let top = document.getElementsByClassName('main')[0].clientHeight / 2 > y ? 'top' : 'bottom';
+    
     let mobile = window.innerWidth < 525 ? -30 : 10;
     let horizontalPos = left == 'left' ? 20 : - distanciaAncho + mobile;
+    console.log(top);
+    let verticalPost = top == 'bottom' ? -100 : 12.5;
 
-    tooltip.style('top', y + 7.5 + 'px');
+    tooltip.style('top', y + verticalPost + 'px');
     tooltip.style('left', (x + horizontalPos) + 'px');
 }
 
