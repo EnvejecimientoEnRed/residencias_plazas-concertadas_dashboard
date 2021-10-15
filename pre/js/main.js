@@ -34,10 +34,10 @@ let tooltip = d3.select('#tooltip');
 const csv = d3.dsvFormat(",");
 
 d3.queue()
-    .defer(d3.text, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/ccaa_plazas_con_respuesta.csv')
-    .defer(d3.text, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/prov_plazas_con_respuesta.csv')
-    .defer(d3.json, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/ccaa.json')
-    .defer(d3.json, 'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/plazas_concertadas_residencias/main/data/provincias.json')
+    .defer(d3.text, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/residencias_plazas-concertadas_dashboard/main/data/ccaa_plazas_con_respuesta.csv')
+    .defer(d3.text, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/residencias_plazas-concertadas_dashboard/main/data/prov_plazas_con_respuesta.csv')
+    .defer(d3.json, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/residencias_plazas-concertadas_dashboard/main/data/ccaa.json')
+    .defer(d3.json, 'https://raw.githubusercontent.com/EnvejecimientoEnRed/residencias_plazas-concertadas_dashboard/main/data/provincias.json')
     .await(function(error, ccaa, prov, ccaaPol, provPol) {
         if (error) throw error;
 
